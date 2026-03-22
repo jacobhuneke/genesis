@@ -18,7 +18,7 @@ type EnglishEtymology struct {
 // reads all the words from etymonline's index to json structs and saves in main
 func etymologyJSON() ([]EnglishEtymology, error) {
 	var words []EnglishEtymology
-	data, err := os.ReadFile("etymonline/index.json")
+	data, err := os.ReadFile("index.json")
 	if err != nil {
 		return []EnglishEtymology{}, err
 	}
