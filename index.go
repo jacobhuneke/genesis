@@ -37,5 +37,18 @@ func searchForWord(etymologies []EnglishEtymology, word string) (EnglishEtymolog
 			return e, nil
 		}
 	}
-	return EnglishEtymology{}, fmt.Errorf("unable to locate word")
+	cleaned := cleanWord(word)
+	e, err := searchForWord(etymologies, cleaned)
+	if err != nil {
+		return EnglishEtymology{}, fmt.Errorf("unable to locate word %v", word)
+	}
+
+	return e, nil
+}
+
+// clean word tries to format the word to match entries of the database. Makes singular, present tense, lowercase
+func cleanWord(word string) string {
+	lower := strings.ToLower(word)
+	noSuffix := strings.TrimRight(lower, "d")
+	return noSuffix
 }
