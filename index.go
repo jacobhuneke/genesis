@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/lloyd/wnram"
 )
 
 type EnglishEtymology struct {
@@ -48,7 +50,25 @@ func searchForWord(etymologies []EnglishEtymology, word string) (EnglishEtymolog
 
 // clean word tries to format the word to match entries of the database. Makes singular, present tense, lowercase
 func cleanWord(word string) string {
-	lower := strings.ToLower(word)
-	noSuffix := strings.TrimRight(lower, "d")
+	noSuffix := strings.TrimRight(word, "d")
 	return noSuffix
+}
+
+func searchWordNet(word string) error {
+	wn, err := wnram.New("./dict")
+	if err != nil {
+		return err
+	}
+	fmt.Println("successfully loaded wordnet")
+	// lookup "yummy"
+	if found, err := wn.Lookup(wnram.Criteria{Matching: "create", POS: []wnram.PartOfSpeech{wnram.Verb}}); err != nil {
+		return err
+	} else {
+		// dump details about each matching term to console
+		for _, f := range found {
+			f.Dump()
+			fmt.Println(f.Related(wnram.AlsoSee))
+		}
+	}
+	return nil
 }
