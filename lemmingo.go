@@ -11,7 +11,7 @@ func makeLemmingo() (*lemmingo.Lemmingo, error) {
 	if err != nil {
 		return &lemmingo.Lemmingo{}, err
 	}
-	lem, err := lemmingo.New(dictAbsPath, "", "freeling", false, false, false)
+	lem, err := lemmingo.New(dictAbsPath, "", "", false, false, false)
 	if err != nil {
 		return &lemmingo.Lemmingo{}, err
 	}

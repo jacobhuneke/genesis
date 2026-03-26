@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/lloyd/wnram"
+	"github.com/jdkato/prose/v2"
 )
 
 type EnglishEtymology struct {
@@ -32,15 +32,18 @@ func etymologyJSON() ([]EnglishEtymology, error) {
 }
 
 // looks for given word in etymology dictionary
-func searchForWord(etymologies []EnglishEtymology, word string) (EnglishEtymology, error) {
+func (c *config) searchForWord(etymologies []EnglishEtymology, word string) (EnglishEtymology, error) {
 	for _, e := range etymologies {
 		lower := strings.ToLower(e.Word)
 		if lower == word {
 			return e, nil
 		}
 	}
-	cleaned := cleanWord(word)
-	e, err := searchForWord(etymologies, cleaned)
+	cleaned, err := c.cleanWord(word)
+	if err != nil {
+		return EnglishEtymology{}, err
+	}
+	e, err := c.searchForWord(etymologies, cleaned)
 	if err != nil {
 		return EnglishEtymology{}, fmt.Errorf("unable to locate word %v", word)
 	}
@@ -49,11 +52,31 @@ func searchForWord(etymologies []EnglishEtymology, word string) (EnglishEtymolog
 }
 
 // clean word tries to format the word to match entries of the database. Makes singular, present tense, lowercase
-func cleanWord(word string) string {
-	noSuffix := strings.TrimRight(word, "d")
-	return noSuffix
+func (c *config) cleanWord(word string) (string, error) {
+	pos, err := getPOS(word)
+	if err != nil {
+		return "", err
+	}
+	newWord, _, err := c.lemmingo.Lemma(word, pos)
+	if err != nil {
+		return "", err
+	}
+	fmt.Println(newWord)
+	return newWord, nil
 }
 
+func getPOS(word string) (string, error) {
+	d, err := prose.NewDocument(word)
+	if err != nil {
+		return "", err
+	}
+	for _, token := range d.Tokens() {
+		return token.Tag, nil
+	}
+	return "", nil
+}
+
+/*
 func searchWordNet(word string) error {
 	wn, err := wnram.New("./dict")
 	if err != nil {
@@ -72,3 +95,4 @@ func searchWordNet(word string) error {
 	}
 	return nil
 }
+*/

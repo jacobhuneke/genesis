@@ -54,10 +54,10 @@ func getTextFromFile(url string) ([]string, error) {
 	return splStrings, nil
 }
 
-func getEtymologiesForVerse(etymologies []EnglishEtymology, verse []string) ([]EnglishEtymology, error) {
+func (c *config) getEtymologiesForVerse(etymologies []EnglishEtymology, verse []string) ([]EnglishEtymology, error) {
 	var result []EnglishEtymology
 	for _, word := range verse {
-		w, err := searchForWord(etymologies, word)
+		w, err := c.searchForWord(etymologies, word)
 		if err != nil {
 			return []EnglishEtymology{}, err
 		}
