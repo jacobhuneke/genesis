@@ -45,3 +45,20 @@ func (q *Queries) CreateEtymology(ctx context.Context, arg CreateEtymologyParams
 	)
 	return i, err
 }
+
+const getEtymology = `-- name: GetEtymology :one
+SELECT id, word, etymology, pos FROM etymologies
+WHERE word = $1
+`
+
+func (q *Queries) GetEtymology(ctx context.Context, word string) (Etymology, error) {
+	row := q.db.QueryRowContext(ctx, getEtymology, word)
+	var i Etymology
+	err := row.Scan(
+		&i.ID,
+		&i.Word,
+		&i.Etymology,
+		&i.Pos,
+	)
+	return i, err
+}

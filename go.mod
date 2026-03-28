@@ -8,6 +8,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jdkato/prose/v2 v2.0.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/lib/pq v1.12.0 // indirect
 	github.com/lloyd/wnram v0.0.0-20170126174755-5860846ee743 // indirect
 	github.com/mingrammer/commonregex v1.0.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect

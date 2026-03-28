@@ -14,3 +14,11 @@ type Etymology struct {
 	Etymology string
 	Pos       string
 }
+
+type Lemma struct {
+	ID          uuid.UUID
+	Word        string
+	Lemma       string
+	Pos         string
+	EtymologyID uuid.UUID
+}

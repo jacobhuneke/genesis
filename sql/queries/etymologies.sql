@@ -8,3 +8,7 @@ VALUES (
     $4
 )
 RETURNING *;
+
+-- name: GetEtymology :one
+SELECT * FROM etymologies
+WHERE word = $1;

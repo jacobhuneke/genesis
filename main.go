@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 
+	"github.com/google/uuid"
+	"github.com/jacobhuneke/genesis/internal/database"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"github.com/smileart/lemmingo"
 )
 
@@ -14,6 +17,7 @@ type config struct {
 	etymologies  []EnglishEtymology
 	prepositions []string
 	lemmingo     *lemmingo.Lemmingo
+	db           database.Queries
 }
 
 func main() {
@@ -23,6 +27,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	dbQueries := database.New(db)
 
 	etymologies, err := etymologyJSON()
 	if err != nil {
@@ -34,13 +39,33 @@ func main() {
 	}
 	lem, err := makeLemmingo()
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Fatal(err.Error())
 	}
+
 	c := config{
 		etymologies:  etymologies,
 		prepositions: prepositions,
 		lemmingo:     lem,
+		db:           *dbQueries,
 	}
+
+	for _, e := range c.etymologies {
+		_, er := c.db.GetEtymology(context.Background(), e.Word)
+		if er != nil {
+			partOfSpeech, _ := getPOS(e.Word)
+			params := database.CreateEtymologyParams{
+				ID:        uuid.New(),
+				Word:      e.Word,
+				Etymology: e.Etymology,
+				Pos:       partOfSpeech,
+			}
+			_, er = c.db.CreateEtymology(context.Background(), params)
+			if er != nil {
+				log.Fatal(er.Error())
+			}
+		}
+	}
+
 	verses1, err := getTextFromFile("genesis1kjv.txt")
 	if err != nil {
 		log.Fatal(err.Error())
@@ -48,12 +73,21 @@ func main() {
 	verse1 := getVerse(verses1, 0)
 
 	noPreps := removePrepositions(c.prepositions, verse1)
-	ety, err := c.getEtymologiesForVerse(c.etymologies, noPreps)
+	_, err = c.getEtymologiesForVerse(c.etymologies, noPreps)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	for i, e := range ety {
-		fmt.Println(i)
-		fmt.Println(e)
+	for _, e := range c.etymologies {
+		partOfSpeech, _ := getPOS(e.Word)
+		params := database.CreateEtymologyParams{
+			ID:        uuid.New(),
+			Word:      e.Word,
+			Etymology: e.Etymology,
+			Pos:       partOfSpeech,
+		}
+		_, er := c.db.CreateEtymology(context.Background(), params)
+		if er != nil {
+			log.Fatal(er.Error())
+		}
 	}
 }

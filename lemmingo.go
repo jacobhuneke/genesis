@@ -18,11 +18,3 @@ func makeLemmingo() (*lemmingo.Lemmingo, error) {
 
 	return lem, nil
 }
-
-/*
-func getPOS(s string) (string, bool) {
-	mapPos := tagset.MapPos("penn", "en")
-	pos, b := mapPos(s)
-	return pos, b
-}
-*/
