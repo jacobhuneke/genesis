@@ -22,3 +22,11 @@ type Lemma struct {
 	Pos         string
 	EtymologyID uuid.UUID
 }
+
+type Master struct {
+	ID          uuid.UUID
+	Word        string
+	Lemma       string
+	Pos         string
+	EtymologyID uuid.UUID
+}

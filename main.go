@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
-	"github.com/google/uuid"
 	"github.com/jacobhuneke/genesis/internal/database"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -21,6 +21,14 @@ type config struct {
 }
 
 func main() {
+	/*fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/", fs)
+	log.Print("Listening on :8080...")
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	*/
 	godotenv.Load()
 	dbURL := os.Getenv("DB_URL")
 	db, err := sql.Open("postgres", dbURL)
@@ -49,45 +57,28 @@ func main() {
 		db:           *dbQueries,
 	}
 
-	for _, e := range c.etymologies {
-		_, er := c.db.GetEtymology(context.Background(), e.Word)
-		if er != nil {
-			partOfSpeech, _ := getPOS(e.Word)
-			params := database.CreateEtymologyParams{
-				ID:        uuid.New(),
-				Word:      e.Word,
-				Etymology: e.Etymology,
-				Pos:       partOfSpeech,
-			}
-			_, er = c.db.CreateEtymology(context.Background(), params)
-			if er != nil {
-				log.Fatal(er.Error())
-			}
-		}
-	}
-
-	verses1, err := getTextFromFile("genesis1kjv.txt")
+	gen1, err := getTextFromFile("text/genesis1kjv.txt")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	verse1 := getVerse(verses1, 0)
 
-	noPreps := removePrepositions(c.prepositions, verse1)
-	_, err = c.getEtymologiesForVerse(c.etymologies, noPreps)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	for _, e := range c.etymologies {
-		partOfSpeech, _ := getPOS(e.Word)
-		params := database.CreateEtymologyParams{
-			ID:        uuid.New(),
-			Word:      e.Word,
-			Etymology: e.Etymology,
-			Pos:       partOfSpeech,
-		}
-		_, er := c.db.CreateEtymology(context.Background(), params)
-		if er != nil {
-			log.Fatal(er.Error())
+	for i := range len(gen1) {
+		verse := getVerse(gen1, i)
+		noPreps := removePrepositions(c.prepositions, verse)
+
+		for _, word := range noPreps {
+			ety, err := c.db.GetEtymology(context.Background(), word)
+			if err != nil {
+				cleanedWord, _ := c.cleanWord(word)
+				ety, err = c.db.GetEtymology(context.Background(), cleanedWord)
+				if err != nil {
+					err = notInDB(word)
+					if err != nil {
+						log.Fatal(err.Error())
+					}
+				}
+			}
+			fmt.Println(ety)
 		}
 	}
 }

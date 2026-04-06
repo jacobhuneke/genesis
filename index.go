@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/jdkato/prose/v2"
@@ -33,6 +34,7 @@ func etymologyJSON() ([]EnglishEtymology, error) {
 
 // looks for given word in etymology dictionary
 func (c *config) searchForWord(etymologies []EnglishEtymology, word string) (EnglishEtymology, error) {
+
 	for _, e := range etymologies {
 		lower := strings.ToLower(e.Word)
 		if lower == word {
@@ -53,6 +55,14 @@ func (c *config) searchForWord(etymologies []EnglishEtymology, word string) (Eng
 
 // clean word tries to format the word to match entries of the database. Makes singular, present tense, lowercase
 func (c *config) cleanWord(word string) (string, error) {
+	validLetters := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
+		"q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
+		"M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}
+	for _, letter := range strings.Split(word, "") {
+		if !slices.Contains(validLetters, letter) {
+			word = strings.Replace(word, letter, "", 1)
+		}
+	}
 	pos, err := getPOS(word)
 	if err != nil {
 		return "", err
@@ -61,7 +71,6 @@ func (c *config) cleanWord(word string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(newWord)
 	return newWord, nil
 }
 

@@ -65,3 +65,28 @@ func (c *config) getEtymologiesForVerse(etymologies []EnglishEtymology, verse []
 	}
 	return result, nil
 }
+
+func notInDB(word string) error {
+	file, err := os.Open("notindb.txt")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	//gets info to dynamically set file size
+	info, err := os.Stat("notindb.txt")
+	if err != nil {
+		return err
+	}
+	//stores memory for length of txt file
+	size := info.Size()
+	bytes := make([]byte, size)
+
+	_, err = file.Read(bytes) //reads text file
+	if err != nil {
+		return err
+	}
+	wordStrings := string(bytes)
+	wordStrings += "\n" + word
+	err = os.WriteFile("notindb.txt", []byte(wordStrings), 0644)
+	return err
+}
